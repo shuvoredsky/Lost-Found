@@ -52,7 +52,7 @@ const Navbar = () => {
                 {label}
               </NavLink>
             ))}
-            {/* {user ? (
+            {user ? (
               <NavLink
                 to={`/myItems/${user?.email}`} //-I
                 className={({ isActive }) =>
@@ -67,7 +67,7 @@ const Navbar = () => {
               </NavLink>
             ) : (
               ""
-            )} */}
+            )}
           </nav>
 
           <DarkModeToggle />
