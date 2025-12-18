@@ -8,6 +8,9 @@ import Swal from "sweetalert2";
 const AddItem = () => {
   const { user } = useContext(AuthContext);
   const [date, setDate] = useState(new Date());
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   const initialState = {
     postType: "Lost",
@@ -25,21 +28,73 @@ const AddItem = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const data = {
-      ...formData,
-      date,
-      name: user.displayName,
-      email: user.email,
-      status: "",
-    };
+  // Image file select হলে এই function চলবে
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      // Preview দেখানোর জন্য
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // ImgBB তে image upload করার function
+  const uploadImageToImgBB = async (imageFile) => {
+    const formData = new FormData();
+    formData.append("image", imageFile);
 
     try {
+      // এখানে আপনার ImgBB API key দিন
+      const response = await axios.post(
+        `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
+        formData
+      );
+      return response.data.data.display_url;
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      throw error;
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Check করুন image select করা হয়েছে কিনা
+    if (!imageFile) {
+      Swal.fire({
+        title: "Warning!",
+        text: "Please select an image first.",
+        icon: "warning",
+      });
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      // প্রথমে image upload করুন
+      const imageUrl = await uploadImageToImgBB(imageFile);
+
+      // তারপর post data তৈরি করুন
+      const data = {
+        ...formData,
+        thumbnail: imageUrl, // ImgBB থেকে পাওয়া URL
+        date,
+        name: user.displayName,
+        email: user.email,
+        status: "",
+      };
+
+      // Database এ save করুন
       const res = await axios.post(
         "https://where-is-it-server-eight.vercel.app/items",
         data
       );
+
       if (res.data.insertedId) {
         Swal.fire({
           title: "Success!",
@@ -49,6 +104,8 @@ const AddItem = () => {
         });
         setFormData(initialState);
         setDate(new Date());
+        setImageFile(null);
+        setImagePreview("");
       }
     } catch (err) {
       console.error("Post failed:", err);
@@ -57,6 +114,8 @@ const AddItem = () => {
         text: "Something went wrong. Try again.",
         icon: "error",
       });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -81,17 +140,26 @@ const AddItem = () => {
           </select>
         </div>
 
+        {/* Image Upload Section - এটি নতুন */}
         <div>
-          <label className="block font-semibold mb-1">Thumbnail URL</label>
+          <label className="block font-semibold mb-1">Upload Image</label>
           <input
-            type="text"
-            name="thumbnail"
-            value={formData.thumbnail}
-            onChange={handleChange}
-            className="w-full border border-base-300 p-2 rounded bg-base-200"
-            placeholder="https://example.com/image.jpg"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full border border-base-300 p-2 rounded bg-base-200 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-primary file:text-white hover:file:bg-primary-focus"
             required
           />
+          {/* Image Preview */}
+          {imagePreview && (
+            <div className="mt-3">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-40 h-40 object-cover rounded border border-base-300"
+              />
+            </div>
+          )}
         </div>
 
         <div>
@@ -166,9 +234,10 @@ const AddItem = () => {
         <div className="text-center">
           <button
             type="submit"
-            className="bg-primary hover:bg-primary-focus text-white font-semibold px-6 py-2 rounded shadow transition"
+            disabled={uploading}
+            className="bg-primary hover:bg-primary-focus text-white font-semibold px-6 py-2 rounded shadow transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Add Post
+            {uploading ? "Uploading..." : "Add Post"}
           </button>
         </div>
       </form>
