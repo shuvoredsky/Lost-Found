@@ -28,12 +28,12 @@ const AddItem = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Image file select হলে এই function চলবে
+  
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
-      // Preview দেখানোর জন্য
+      
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -42,13 +42,13 @@ const AddItem = () => {
     }
   };
 
-  // ImgBB তে image upload করার function
+  
   const uploadImageToImgBB = async (imageFile) => {
     const formData = new FormData();
     formData.append("image", imageFile);
 
     try {
-      // এখানে আপনার ImgBB API key দিন
+      
       const response = await axios.post(
         `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
         formData
@@ -63,7 +63,7 @@ const AddItem = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check করুন image select করা হয়েছে কিনা
+    
     if (!imageFile) {
       Swal.fire({
         title: "Warning!",
@@ -76,20 +76,20 @@ const AddItem = () => {
     setUploading(true);
 
     try {
-      // প্রথমে image upload করুন
+
       const imageUrl = await uploadImageToImgBB(imageFile);
 
-      // তারপর post data তৈরি করুন
+      
       const data = {
         ...formData,
-        thumbnail: imageUrl, // ImgBB থেকে পাওয়া URL
+        thumbnail: imageUrl, 
         date,
         name: user.displayName,
         email: user.email,
         status: "",
       };
 
-      // Database এ save করুন
+
       const res = await axios.post(
         "https://where-is-it-server-eight.vercel.app/items",
         data
@@ -126,7 +126,6 @@ const AddItem = () => {
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Post Type */}
         <div>
           <label className="block font-semibold mb-1">Post Type</label>
           <select
@@ -140,7 +139,6 @@ const AddItem = () => {
           </select>
         </div>
 
-        {/* Image Upload Section - এটি নতুন */}
         <div>
           <label className="block font-semibold mb-1">Upload Image</label>
           <input
@@ -150,7 +148,7 @@ const AddItem = () => {
             className="w-full border border-base-300 p-2 rounded bg-base-200 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-primary file:text-white hover:file:bg-primary-focus"
             required
           />
-          {/* Image Preview */}
+          
           {imagePreview && (
             <div className="mt-3">
               <img

@@ -20,7 +20,7 @@ const Navbar = () => {
     ["Home", "/"],
     ["Lost & Found Items", "/allItems"], //-
     ["Add Item", "/add-lost-found"], 
-    // ["Recoverd Items", "/all-Recovered"], //-
+    ["Recoverd Items", "/all-Recovered"], //-
   ];
 
   const activeClass = "border-b-2 border-primary text-primary font-semibold";
