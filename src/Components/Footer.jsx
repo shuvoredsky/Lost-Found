@@ -25,11 +25,11 @@ const Footer = () => {
               About Lost & Found
             </h3>
             <p className="text-sm leading-relaxed mb-3">
-              WhereIsIt helps you reunite with lost items and connect with
+              Lost & Found helps you reunite with lost items and connect with
               honest finders. A community built on trust and kindness. ❤️
             </p>
             <p className="text-sm hover:text-secondary cursor-pointer">
-              📧 support@whereIsIt.com
+              📧 support@lostfound.com
             </p>
             <p className="text-sm">📞 +880 1234 567890</p>
           </div>

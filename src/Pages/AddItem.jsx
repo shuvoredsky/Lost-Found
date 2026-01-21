@@ -145,7 +145,7 @@ const AddItem = () => {
             type="file"
             accept="image/*"
             onChange={handleImageChange}
-            className="w-full border border-base-300 p-2 rounded bg-base-200 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-primary file:text-white hover:file:bg-primary-focus"
+            className="w-full border border-base-300 p-2 rounded bg-base-200 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-primary file:text-white hover:file:bg-primary-focus cursor-pointer"
             required
           />
           
@@ -233,7 +233,7 @@ const AddItem = () => {
           <button
             type="submit"
             disabled={uploading}
-            className="bg-primary hover:bg-primary-focus text-white font-semibold px-6 py-2 rounded shadow transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-primary hover:bg-primary-focus text-white font-semibold px-6 py-2 rounded shadow transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {uploading ? "Uploading..." : "Add Post"}
           </button>

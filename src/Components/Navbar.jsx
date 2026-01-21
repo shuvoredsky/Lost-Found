@@ -179,7 +179,7 @@ const Navbar = () => {
                   <li>
                     <button
                       onClick={handleLogOut}
-                      className="block w-full text-left px-4 py-2 hover:bg-error/20 text-error"
+                      className="block w-full text-left px-4 py-2 hover:bg-error/20 text-error cursor-pointer"
                     >
                       Logout
                     </button>

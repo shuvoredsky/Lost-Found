@@ -30,20 +30,32 @@ const SignIn = () => {
       });
   };
 
-  const handleForgetPass = () => {
-    const email = emailRef.current.value.trim();
-    setErrorMsg("");
+  const handleForgetPass = async () => {
+    // Get email from ref
+    const email = emailRef.current.value;
+    
     if (!email) {
       setErrorMsg("Please enter your email address first.");
+      toast.error("Please enter your email address first.");
       return;
     }
-    sendPasswordResetEmail(auth, email)
-      .then(() => {
-        toast.success("A password reset email has been sent!");
-      })
-      .catch((error) => {
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast.success("Password reset email sent. Check your inbox.");
+      setErrorMsg("");
+    } catch (error) {
+      if (error.code === "auth/user-not-found") {
+        setErrorMsg("No account found with this email.");
+        toast.error("No account found with this email.");
+      } else if (error.code === "auth/invalid-email") {
+        setErrorMsg("Invalid email address.");
+        toast.error("Invalid email address.");
+      } else {
         setErrorMsg(error.message);
-      });
+        toast.error("Failed to send reset email. Try again.");
+      }
+    }
   };
 
   return (
@@ -93,7 +105,7 @@ const SignIn = () => {
             <button
               type="button"
               onClick={handleForgetPass}
-              className="text-primary hover:underline focus:outline-none"
+              className="text-primary hover:underline focus:outline-none cursor-pointer"
             >
               Forgot password?
             </button>
@@ -110,7 +122,7 @@ const SignIn = () => {
           </button>
 
           <p className="text-center text-sm mt-4">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <Link to="/sign-up" className="text-secondary hover:underline">
               Register
             </Link>
