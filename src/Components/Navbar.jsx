@@ -1,18 +1,22 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router";
 import { AuthContext } from "../Provider/AuthProvider";
 import { toast } from "react-toastify";
-import { FaMapMarkerAlt, FaUser } from "react-icons/fa";
+import { FaMapMarkerAlt, FaUser, FaBars, FaTimes, FaSignInAlt, FaUserPlus } from "react-icons/fa";
 import DarkModeToggle from "./DarkModeToggle";
 
 const Navbar = () => {
   const { user, logOut } = useContext(AuthContext);
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogOut = () => {
     logOut()
-      .then(() => toast.success("Sign out successfully"))
+      .then(() => {
+        toast.success("Sign out successfully");
+        setMobileMenuOpen(false);
+      })
       .catch((error) => toast.error(error.message));
   };
 
@@ -23,19 +27,79 @@ const Navbar = () => {
     ["Recovered Items", "/all-Recovered"],
   ];
 
-  const activeClass =
-    "border-b-2 border-primary text-primary font-semibold";
+  const activeClass = "border-b-2 border-primary text-primary font-semibold";
+  const authBtnClass = "text-sm px-3 py-2 font-bold text-white bg-primary hover:bg-error/80 rounded transition";
+  const outlineBtnClass = "text-sm px-3 py-2 font-bold text-primary border border-primary hover:bg-primary hover:text-white rounded transition cursor-pointer";
 
-  const authBtnClass =
-    "text-sm px-3 py-2 font-bold text-white bg-primary hover:bg-error/80 rounded transition";
-
-  const outlineBtnClass =
-    "text-sm px-3 py-2 font-bold text-primary border border-primary hover:bg-primary hover:text-white rounded transition cursor-pointer";
+  const handleNavClick = () => {
+    setMobileMenuOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 shadow-md bg-base-100 text-base-content">
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        {/* Mobile Layout */}
+        <div className="md:hidden flex justify-between items-center h-16">
+          {/* Left: Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="text-2xl p-2 hover:bg-base-200 rounded-lg transition"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+          </button>
+
+          {/* Center: Logo */}
+          <div className="cursor-pointer" onClick={() => navigate("/")}>
+            <span className="text-xl flex items-center font-bold text-primary">
+              Lost <FaMapMarkerAlt className="ml-1 text-error" /> Found
+            </span>
+          </div>
+
+          {/* Right: Auth Area */}
+          {user ? (
+            <div className="flex items-center space-x-2">
+              {user.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt="User"
+                  title={user.displayName || "User"}
+                  className="w-8 h-8 rounded-full border-2 border-base-content object-cover"
+                />
+              ) : (
+                <FaUser size={20} />
+              )}
+              <button
+                onClick={handleLogOut}
+                className="text-xs px-2 py-1 font-bold text-white bg-error hover:bg-error/80 rounded transition"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => navigate("/sign-in")}
+                className="p-2 text-primary hover:bg-primary/10 rounded-lg transition"
+                aria-label="Sign In"
+                title="Sign In"
+              >
+                <FaSignInAlt size={20} />
+              </button>
+              <button
+                onClick={() => navigate("/sign-up")}
+                className="p-2 text-primary hover:bg-primary/10 rounded-lg transition"
+                aria-label="Sign Up"
+                title="Sign Up"
+              >
+                <FaUserPlus size={20} />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop/Tablet Layout */}
+        <div className="hidden md:flex justify-between items-center h-16">
           {/* Logo */}
           <div className="cursor-pointer" onClick={() => navigate("/")}>
             <span className="text-2xl flex items-center font-bold text-primary ml-2">
@@ -44,7 +108,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex space-x-6 items-center">
+          <nav className="flex space-x-6 items-center">
             {navLinks.map(([label, path]) => (
               <NavLink
                 key={label}
@@ -81,8 +145,8 @@ const Navbar = () => {
           <DarkModeToggle />
 
           {/* Desktop Auth Area */}
-          {user && (
-            <div className="hidden md:flex items-center space-x-4">
+          {user ? (
+            <div className="flex items-center space-x-4">
               {user.photoURL ? (
                 <img
                   src={user.photoURL}
@@ -98,10 +162,8 @@ const Navbar = () => {
                 Logout
               </button>
             </div>
-          )}
-
-          {!user && (
-            <div className="hidden md:flex items-center space-x-3">
+          ) : (
+            <div className="flex items-center space-x-3">
               <button
                 onClick={() => navigate("/sign-in")}
                 className={authBtnClass}
@@ -117,74 +179,62 @@ const Navbar = () => {
               </button>
             </div>
           )}
-
-          {/* Mobile Menu */}
-          <div className="md:hidden flex items-center">
-            {user ? (
-              <details className="dropdown dropdown-end">
-                <summary className="cursor-pointer list-none">
-                  {user.photoURL ? (
-                    <img
-                      src={user.photoURL}
-                      alt="User"
-                      className="w-9 h-9 rounded-full border-2 border-base-content object-cover"
-                    />
-                  ) : (
-                    <FaUser size={24} />
-                  )}
-                </summary>
-
-                <ul className="absolute right-0 top-12 w-48 bg-base-200 shadow-md rounded-md mt-2 text-sm z-50">
-                  <li>
-                    <Link className="block px-4 py-2 hover:bg-base-300" to="/">
-                      Home
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      className="block px-4 py-2 hover:bg-base-300"
-                      to="/add-lost-found"
-                    >
-                      Add Item
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      className="block px-4 py-2 hover:bg-base-300"
-                      to={`/myItems/${user.email}`}
-                    >
-                      My Items
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      onClick={handleLogOut}
-                      className="block w-full text-left px-4 py-2 text-error hover:bg-error/20"
-                    >
-                      Logout
-                    </button>
-                  </li>
-                </ul>
-              </details>
-            ) : (
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => navigate("/sign-in")}
-                  className={authBtnClass}
-                >
-                  Sign in
-                </button>
-                <button
-                  onClick={() => navigate("/sign-up")}
-                  className={outlineBtnClass}
-                >
-                  Sign up
-                </button>
-              </div>
-            )}
-          </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-base-200 shadow-lg rounded-b-lg absolute left-0 right-0 top-16 mx-4 z-40">
+            <nav className="flex flex-col p-4 space-y-2">
+              {navLinks.map(([label, path]) => (
+                <NavLink
+                  key={label}
+                  to={path}
+                  onClick={handleNavClick}
+                  className={({ isActive }) =>
+                    `px-4 py-3 rounded-lg transition ${
+                      isActive
+                        ? "bg-primary text-white font-semibold"
+                        : "hover:bg-base-300"
+                    }`
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
+
+              {user && (
+                <NavLink
+                  to={`/myItems/${user.email}`}
+                  onClick={handleNavClick}
+                  className={({ isActive }) =>
+                    `px-4 py-3 rounded-lg transition ${
+                      isActive
+                        ? "bg-primary text-white font-semibold"
+                        : "hover:bg-base-300"
+                    }`
+                  }
+                >
+                  My Items
+                </NavLink>
+              )}
+
+              {/* Theme Toggle in Mobile Menu */}
+              <div className="px-4 py-3 flex items-center justify-between border-t border-base-300 mt-2 pt-4">
+                <span className="font-semibold">Dark Mode</span>
+                <DarkModeToggle />
+              </div>
+            </nav>
+          </div>
+        )}
       </div>
+
+      {/* Overlay when mobile menu is open */}
+      {mobileMenuOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/20 z-30"
+          onClick={() => setMobileMenuOpen(false)}
+        ></div>
+      )}
     </header>
   );
 };
