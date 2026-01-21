@@ -8,11 +8,15 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FcGoogle } from "react-icons/fc";
 import { Helmet } from "react-helmet-async";
+import axios from "axios";
 
 const SignUp = () => {
   const { createUser, setUser, updateUser } = useContext(AuthContext);
   const [nameError, setNameError] = useState("");
   const [showPass, setShowPass] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
   const provider = new GoogleAuthProvider();
 
@@ -28,11 +32,41 @@ const SignUp = () => {
       });
   };
 
-  const handleRegister = (e) => {
+  // Image change handler
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Upload image to ImgBB
+  const uploadImageToImgBB = async (imageFile) => {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    try {
+      const response = await axios.post(
+        `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
+        formData
+      );
+      return response.data.data.display_url;
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      throw error;
+    }
+  };
+
+  const handleRegister = async (e) => {
     e.preventDefault();
     const form = e.target;
     const name = form.name.value.trim();
-    const photo = form.photo.value.trim();
     const email = form.email.value.trim();
     const password = form.password.value;
 
@@ -43,26 +77,37 @@ const SignUp = () => {
       setNameError("");
     }
 
-    createUser(email, password)
-      .then((currentUser) => {
-        const newUser = currentUser.user;
-        if (newUser) {
-          toast.success("Register Success!");
-          e.target.reset();
-        }
-        updateUser({ displayName: name, photoURL: photo })
-          .then(() => {
-            setUser({ ...newUser, displayName: name, photoURL: photo });
-            navigate("/sign-in");
-          })
-          .catch(() => {
-            toast.warn("User updated partially!");
-            setUser(newUser);
-          });
-      })
-      .catch((error) => {
-        toast.error(error.message);
-      });
+    setUploading(true);
+
+    try {
+      let photoURL = "";
+
+      // If user selected an image, upload it to ImgBB
+      if (imageFile) {
+        photoURL = await uploadImageToImgBB(imageFile);
+      }
+
+      // Create user in Firebase
+      const currentUser = await createUser(email, password);
+      const newUser = currentUser.user;
+
+      if (newUser) {
+        toast.success("Register Success!");
+        e.target.reset();
+        setImageFile(null);
+        setImagePreview("");
+      }
+
+      // Update user profile with name and photo
+      await updateUser({ displayName: name, photoURL: photoURL });
+      setUser({ ...newUser, displayName: name, photoURL: photoURL });
+      navigate("/sign-in");
+
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -94,15 +139,26 @@ const SignUp = () => {
 
           <div>
             <label htmlFor="photo" className="block mb-1 font-semibold">
-              Photo URL
+              Profile Photo
             </label>
             <input
               id="photo"
               name="photo"
-              type="url"
-              placeholder="Photo URL"
-              className="input input-bordered w-full"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="file-input file-input-bordered w-full"
             />
+            
+            {imagePreview && (
+              <div className="mt-3 flex justify-center">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-24 h-24 object-cover rounded-full border-2 border-primary"
+                />
+              </div>
+            )}
           </div>
 
           <div>
@@ -145,14 +201,19 @@ const SignUp = () => {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary w-full">
-            Register
+          <button 
+            type="submit" 
+            className="btn btn-primary w-full"
+            disabled={uploading}
+          >
+            {uploading ? "Registering..." : "Register"}
           </button>
 
           <button
             type="button"
             className="btn btn-outline w-full flex items-center justify-center gap-2"
             onClick={handleGoogleSignIn}
+            disabled={uploading}
           >
             <FcGoogle size={24} /> Sign In with Google
           </button>
