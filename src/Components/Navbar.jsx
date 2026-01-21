@@ -18,31 +18,39 @@ const Navbar = () => {
 
   const navLinks = [
     ["Home", "/"],
-    ["Lost & Found Items", "/allItems"], //-
-    ["Add Item", "/add-lost-found"], 
-    ["Recoverd Items", "/all-Recovered"], //-
+    ["Lost & Found Items", "/allItems"],
+    ["Add Item", "/add-lost-found"],
+    ["Recovered Items", "/all-Recovered"],
   ];
 
-  const activeClass = "border-b-2 border-primary text-primary font-semibold";
+  const activeClass =
+    "border-b-2 border-primary text-primary font-semibold";
+
+  const authBtnClass =
+    "text-sm px-3 py-2 font-bold text-white bg-primary hover:bg-error/80 rounded transition";
+
+  const outlineBtnClass =
+    "text-sm px-3 py-2 font-bold text-primary border border-primary hover:bg-primary hover:text-white rounded transition cursor-pointer";
 
   return (
     <header className="sticky top-0 z-50 shadow-md bg-base-100 text-base-content">
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
+          {/* Logo */}
           <div className="cursor-pointer" onClick={() => navigate("/")}>
             <span className="text-2xl flex items-center font-bold text-primary ml-2">
-              Lost
-              <FaMapMarkerAlt className="ml-1 text-error" />Found
+              Lost <FaMapMarkerAlt className="ml-1 text-error" /> Found
             </span>
           </div>
 
+          {/* Desktop Nav */}
           <nav className="hidden md:flex space-x-6 items-center">
             {navLinks.map(([label, path]) => (
               <NavLink
                 key={label}
                 to={path}
                 className={({ isActive }) =>
-                  `text-md px-2 py-1 transition duration-200 ${
+                  `text-md px-2 py-1 transition ${
                     isActive
                       ? activeClass
                       : "hover:border-b-2 hover:border-secondary"
@@ -52,11 +60,12 @@ const Navbar = () => {
                 {label}
               </NavLink>
             ))}
-            {user ? (
+
+            {user && (
               <NavLink
-                to={`/myItems/${user?.email}`} //-I
+                to={`/myItems/${user.email}`}
                 className={({ isActive }) =>
-                  `text-md px-2 py-1 transition duration-200 ${
+                  `text-md px-2 py-1 transition ${
                     isActive
                       ? activeClass
                       : "hover:border-b-2 hover:border-secondary"
@@ -65,121 +74,92 @@ const Navbar = () => {
               >
                 My Items
               </NavLink>
-            ) : (
-              ""
             )}
           </nav>
 
+          {/* Theme Toggle */}
           <DarkModeToggle />
 
-          {user ? (
+          {/* Desktop Auth Area */}
+          {user && (
             <div className="hidden md:flex items-center space-x-4">
-              <details className="dropdown dropdown-end relative">
-                <summary className="cursor-pointer list-none">
-                  {user.photoURL ? (
-                    <img
-                      src={user.photoURL}
-                      alt="User"
-                      title={user.displayName || "User"}
-                      className="w-10 h-10 rounded-full border-2 border-base-content object-cover hover:scale-105 transition"
-                    />
-                  ) : (
-                    <FaUser size={28} className="text-base-content" />
-                  )}
-                </summary>
-              </details>
+              {user.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt="User"
+                  title={user.displayName || "User"}
+                  className="w-10 h-10 rounded-full border-2 border-base-content object-cover"
+                />
+              ) : (
+                <FaUser size={28} />
+              )}
 
-              <button
-                onClick={handleLogOut}
-                className="text-sm  px-3 py-2 font-bold text-white bg-primary hover:bg-error/80 rounded transition"
-              >
+              <button onClick={handleLogOut} className={authBtnClass}>
                 Logout
               </button>
             </div>
-          ) : (
-            <div className="hidden md:flex items-center space-x-4">
+          )}
+
+          {!user && (
+            <div className="hidden md:flex items-center space-x-3">
               <button
                 onClick={() => navigate("/sign-in")}
-                className={`text-sm ${
-                  pathname === "/sign-in"
-                    ? "text-primary font-semibold"
-                    : "text-base-content"
-                }`}
+                className={authBtnClass}
               >
                 Sign in
               </button>
+
               <button
                 onClick={() => navigate("/sign-up")}
-                className={`text-sm ${
-                  pathname === "/sign-up"
-                    ? "text-primary font-semibold"
-                    : "text-base-content"
-                }`}
+                className={outlineBtnClass}
               >
                 Sign up
               </button>
             </div>
           )}
 
-          <div className="md:hidden flex items-center space-x-2">
+          {/* Mobile Menu */}
+          <div className="md:hidden flex items-center">
             {user ? (
-              <details className="dropdown dropdown-end relative">
+              <details className="dropdown dropdown-end">
                 <summary className="cursor-pointer list-none">
                   {user.photoURL ? (
                     <img
                       src={user.photoURL}
                       alt="User"
-                      className="w-10 h-10 rounded-full border-2 border-base-content object-cover"
+                      className="w-9 h-9 rounded-full border-2 border-base-content object-cover"
                     />
                   ) : (
-                    <FaUser size={24} className="text-base-content" />
+                    <FaUser size={24} />
                   )}
                 </summary>
-                <ul className="absolute right-0 top-12 w-48 bg-base-200 shadow-md rounded-md mt-2 divide-y divide-base-content/10 z-50 text-sm">
+
+                <ul className="absolute right-0 top-12 w-48 bg-base-200 shadow-md rounded-md mt-2 text-sm z-50">
                   <li>
-                    <Link
-                      to={"/"}
-                      className="block px-4 py-2 hover:bg-base-300"
-                    >
+                    <Link className="block px-4 py-2 hover:bg-base-300" to="/">
                       Home
                     </Link>
                   </li>
                   <li>
-                    <button
-                      onClick={() => navigate("/add-lost-found")}
-                      className="block w-full text-left px-4 py-2 hover:bg-base-300"
+                    <Link
+                      className="block px-4 py-2 hover:bg-base-300"
+                      to="/add-lost-found"
                     >
-                      Add Lost Found
-                    </button>
+                      Add Item
+                    </Link>
                   </li>
                   <li>
                     <Link
-                      to={`/my-items/${user?.email}`}
                       className="block px-4 py-2 hover:bg-base-300"
+                      to={`/myItems/${user.email}`}
                     >
                       My Items
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      to={"/allRecovered"}
-                      className="block px-4 py-2 hover:bg-base-300"
-                    >
-                      Recovered
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to={"/allItems"}
-                      className="block px-4 py-2 hover:bg-base-300"
-                    >
-                      All Lost & Found Items
-                    </Link>
-                  </li>
-                  <li>
                     <button
                       onClick={handleLogOut}
-                      className="block w-full text-left px-4 py-2 hover:bg-error/20 text-error cursor-pointer"
+                      className="block w-full text-left px-4 py-2 text-error hover:bg-error/20"
                     >
                       Logout
                     </button>
@@ -187,28 +167,20 @@ const Navbar = () => {
                 </ul>
               </details>
             ) : (
-              <>
+              <div className="flex space-x-2">
                 <button
                   onClick={() => navigate("/sign-in")}
-                  className={`text-sm ${
-                    pathname === "/sign-in"
-                      ? "text-primary font-semibold"
-                      : "text-base-content"
-                  }`}
+                  className={authBtnClass}
                 >
                   Sign in
                 </button>
                 <button
                   onClick={() => navigate("/sign-up")}
-                  className={`text-sm ${
-                    pathname === "/sign-up"
-                      ? "text-primary font-semibold"
-                      : "text-base-content"
-                  }`}
+                  className={outlineBtnClass}
                 >
                   Sign up
                 </button>
-              </>
+              </div>
             )}
           </div>
         </div>
